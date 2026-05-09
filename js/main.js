@@ -54,6 +54,7 @@ function initShapes() {
     { type:'cube', x:W*0.15, y:H*0.85, size:18, rot:0, speed:0.016 },
     { type:'hexypramid', x:W*0.92, y:H*0.9, size:22, rot:1, speed:0.011 },
     { type:'pentprism', x:W*0.85, y:H*0.90, size:25, rot:0, speed:0.008 },
+    { type:'hexpyramid', x:W*0.1, y:H*0.95, size:25, rot:0, speed:0.005 },
   ];
 }
 

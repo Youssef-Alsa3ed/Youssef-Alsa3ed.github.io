@@ -10,7 +10,6 @@
   --sans:       "Rajdhani", sans-serif;
   --serif:      "Crimson Pro", serif;
 
-  /* Light mode tokens */
   --bg:              var(--cream);
   --text:            var(--dark);
   --muted:           #5a584a;
@@ -31,7 +30,6 @@
   --svgfillcolor: var(--dark);
 }
 
-/* Dark mode tokens — matches original dark design */
 [data-theme="dark"] {
   --bg:              #0f0e0c;
   --text:            #c5c1a8;
@@ -424,7 +422,7 @@ h2 {
   gap: 1.2rem;
 }
 
-.skill-chip {
+.skill-card {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -438,7 +436,7 @@ h2 {
   cursor: default;
 }
 
-.skill-chip::after {
+.skill-card::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -452,24 +450,24 @@ h2 {
   transition: opacity 0.3s;
 }
 
-.skill-chip:hover {
+.skill-card:hover {
   border-color: rgba(179, 152, 70, 0.4);
   background: var(--card-hover);
 }
-.skill-chip:hover::after {
+.skill-card:hover::after {
   opacity: 1;
 }
 
-.skill-chip svg,
-.skill-chip img {
+.skill-card svg,
+.skill-card img {
   width: 36px;
   height: 36px;
   filter: grayscale(40%) brightness(0.85);
   transition: filter 0.3s;
   fill: var(--svgfillcolor);
 }
-.skill-chip:hover svg,
-.skill-chip:hover img {
+.skill-card:hover svg,
+.skill-card:hover img {
   filter: grayscale(0%) brightness(1);
 }
 
@@ -482,7 +480,7 @@ h2 {
   text-align: center;
   transition: color 0.3s;
 }
-.skill-chip:hover .skill-name {
+.skill-card:hover .skill-name {
   color: var(--text);
 }
 
