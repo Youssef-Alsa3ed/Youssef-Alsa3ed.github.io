@@ -1,212 +1,24 @@
-  <!DOCTYPE html>
-  <html lang="en">
+<!DOCTYPE html>
+<html lang="en">
   <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Youssef Sayed</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/normalize.css"/>
-  <link rel="stylesheet" href="css/style.css"/>
-  
-  <!-- smooth scrolling -->
-  <link rel="stylesheet" href="js/lenis/dist/lenis.css"/>
-  <script src="js/lenis/dist/lenis.min.js"></script> 
-  <script>new Lenis({ autoRaf: true, autoToggle: true, anchors: true, allowNestedScroll: true, naiveDimensions: true, stopInertiaOnNavigate: true })</script>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Youssef Sayed — engineering student and software engineer. C++, OpenGL, Unity and web development portfolio."
+    />
+    <meta name="theme-color" content="#0f0e0c" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Youssef Sayed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-  
-  <!-- THEME TOGGLE -->
-  <button id="theme-toggle" aria-label="Toggle theme" title="Toggle dark/light mode">◐</button>
-  
-  <!-- HUD lines -->
-  <div class="hud-h" style="top: 48px;"></div>
-  <div class="hud-h" style="bottom: 40px;"></div>
-
-  <!-- Particle canvas -->
-  <canvas id="bg-canvas"></canvas>
-
-  <!-- Scanlines overlay -->
-  <div id="scanlines"></div>
-
-  <!-- HERO -->
-  <section id="hero">
-    <div class="hero-card">
-      <div class="avatar-ring">
-          <img src="media/avatar2.webp" alt="Youssef Sayed" class="avatar" />
-      </div>
-
-      <span class="tag">01 // Profile</span>
-      <h1>Youssef Sayed</h1>
-      <span class="name-sub">Engineering Student · Software Engineer</span>
-
-      <div class="divider"><span>◆ bio  graphy ◆</span></div>
-
-      <ul class="bio">
-        <li>Freshman year engineering student → Computer Engineering</li>
-        <li>Web developer in progress</li>
-        <li>C++ · OpenGL · Unity · Game Developer</li>
-        <li>Low-level systems & graphics enthusiast</li>
-      </ul>
-    </div>
-
-    <div class="scroll-hint">scroll</div>
-  </section>
-
-  <!-- SKILLS -->
-  <section id="skills">
-    <div class="section-header">
-      <span class="section-label">02 // capabilities</span>
-      <div class="section-line"></div>
-    </div>
-    <h2 style="margin-bottom:2.5rem;">Skills</h2>
-
-  <div class="skills-grid">
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-cplusplus"></use>
-        </svg>
-        <span class="skill-name">C++</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-csharp"></use>
-        </svg>
-        <span class="skill-name">C#</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-javascript"></use>
-        </svg>
-        <span class="skill-name">JavaScript</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-html5"></use>
-        </svg>
-        <span class="skill-name">HTML</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-css"></use>
-        </svg>
-        <span class="skill-name">CSS</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-git"></use>
-        </svg>
-        <span class="skill-name">Git</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-linux"></use>
-        </svg>
-        <span class="skill-name">Linux</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-unity"></use>
-        </svg>
-        <span class="skill-name">Unity</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-opengl"></use>
-        </svg>
-        <span class="skill-name">OpenGL</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-blender"></use>
-        </svg>
-        <span class="skill-name">Blender</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-vim"></use>
-        </svg>
-        <span class="skill-name">Vim</span>
-      </div>
-
-      <div class="skill-card">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <use href="./svg/svg-sprite.svg#icon-archlinux"></use>
-        </svg>
-        <span class="skill-name">Arch</span>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- WORK PREVIEW -->
-  <section id="work" style="">
-    <div class="section-header">
-      <span class="section-label">03 // log</span>
-      <div class="section-line"></div>
-    </div>
-    <h2 style="margin-bottom:2.5rem;">Projects</h2>
-
-  </section>
-
-  <section class="display">
-    <div class="work-grid">
-      <div class="work-card">
-    <video autoplay loop muted playsinline class="project-video">
-        <source src="media/project1.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-        <span class="projectdescription">A custom game engine built from scratch using C++ and OpenGL.</span>
-      </div>
-      <div class="work-card">
-        <img src="media/project4.webp" alt="Yet Another Game Engine" />
-        <span class="projectdescription">An old experimental game engine made with OpenGL.</span>
-      </div>
-      <div class="work-card">
-        <img src="media/project5.webp" alt="Blender Chess Scene" />
-        <span class="projectdescription">A detailed chess scene created in Blender.</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- CONTACT -->
-  <section id="contact" style="">
-    <div class="section-header">
-      <span class="section-label">04 // transmission</span>
-      <div class="section-line"></div>
-    </div>
-    <h2 style="margin-bottom:1rem;">Contact</h2>
-    <p style="font-family:var(--serif); font-style:italic; color:var(--muted); font-size:1.2rem; letter-spacing:0.05em;">
-      Open to freelance work, collaborations, and interesting projects.
-    </p>
-
-    <div class="contact-buttons">
-      <a class="btn" href="https://github.com/Youssef-Alsa3ed" target="_blank">
-        ↗ GitHub
-      </a>
-      <a class="btn" href="mailto:youssef.alsead5@gmail.com">
-        ✉ Email
-      </a>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer>
-    <p>© 2026 Youssef Sayed — All rights reserved // </p>
-  </footer>
-  <script src="js/main.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
-  </html>
+</html>
