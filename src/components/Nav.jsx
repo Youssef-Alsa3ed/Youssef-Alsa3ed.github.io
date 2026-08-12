@@ -15,14 +15,20 @@ export default function Nav({ theme, onToggle }) {
   const progressRef = useRef(null);
 
   useEffect(() => {
+    let ticking = false;
     const onScroll = () => {
       setScrolled(window.scrollY > 24);
-      const el = progressRef.current;
-      if (el) {
-        const max =
-          document.documentElement.scrollHeight - window.innerHeight;
-        el.style.width = `${max > 0 ? (window.scrollY / max) * 100 : 0}%`;
-      }
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const el = progressRef.current;
+        if (el) {
+          const max =
+            document.documentElement.scrollHeight - window.innerHeight;
+          el.style.width = `${max > 0 ? (window.scrollY / max) * 100 : 0}%`;
+        }
+        ticking = false;
+      });
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -56,7 +62,7 @@ export default function Nav({ theme, onToggle }) {
     >
       <div
         aria-hidden="true"
-        className="absolute bottom-0 left-0 h-[3px] bg-[linear-gradient(90deg,transparent_0%,rgba(179,152,70,0.35)_8%,#b39846_45%,#d4b55a_78%,rgba(255,255,255,0.9)_100%)] shadow-[0_0_12px_rgba(179,152,70,0.6)] transition-[width] duration-150 ease-linear"
+        className="absolute bottom-0 left-0 hidden h-[3px] bg-[linear-gradient(90deg,transparent_0%,rgba(179,152,70,0.35)_8%,#b39846_45%,#d4b55a_78%,rgba(255,255,255,0.9)_100%)] shadow-[0_0_12px_rgba(179,152,70,0.6)] md:block"
         ref={progressRef}
       />
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3 sm:px-6">

@@ -66,19 +66,27 @@ export default function BackgroundCanvas({ theme }) {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let W = 0;
     let H = 0;
+    let lastW = 0;
     let particles = [];
     let shapes = [];
     let raf = 0;
     let timer = 0;
 
     function resize() {
-      W = window.innerWidth;
-      H = window.innerHeight;
+      const newW = window.innerWidth;
+      const newH = window.innerHeight;
+      const widthChanged = newW !== lastW;
+
+      W = newW;
+      H = newH;
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
       canvas.style.width = W + "px";
       canvas.style.height = H + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      lastW = newW;
+      if (!widthChanged) return; // URL-bar height jitter on mobile: keep scene, only resize backing store
 
       const count = Math.min(120, Math.max(50, Math.round((W * H) / 22000)));
       particles = Array.from({ length: count }, () => ({
