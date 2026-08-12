@@ -1,11 +1,9 @@
 export default function Hero() {
   return (
-    <section id="hero" className="relative flex min-h-screen items-center justify-center px-5 py-28 sm:px-8">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute h-[min(640px,92vw)] w-[min(640px,92vw)] rounded-full bg-[radial-gradient(circle,rgba(179,152,70,0.16),transparent_65%)] blur-2xl"
-      />
-
+    <section
+      id="hero"
+      className="relative flex min-h-screen items-center justify-center px-5 py-28 sm:px-8"
+    >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-6 top-24 h-14 w-14 border-l-2 border-t-2 border-accent/40 sm:left-16"
@@ -44,7 +42,12 @@ export default function Hero() {
         <p className="mt-3 font-serif text-sm italic tracking-[0.08em] text-accent opacity-80 sm:text-base">
           Engineering Student · Software Engineer
         </p>
-
+        <div className="mt-9 flex justify-center">
+          <code className="rounded border border-border bg-surface px-4 py-2 font-mono text-xs tracking-widest text-accent">
+            <span className="text-gold">$</span> whoami
+            <span className="ml-1 inline-block h-3 w-[7px] animate-[blink_1s_step-end_infinite] bg-accent align-middle" />
+          </code>
+        </div>
         <div className="my-8 flex items-center gap-4 opacity-35">
           <span className="h-px flex-1 bg-accent" />
           <span className="font-mono text-[0.6rem] tracking-[0.3em] text-accent">
@@ -55,8 +58,8 @@ export default function Hero() {
 
         <ul className="mx-auto inline-block list-none space-y-3 text-left">
           {[
-            "Freshman year engineering student → Computer Engineering",
-            "Web developer in progress",
+            "Second year engineering student → Electrical Engineering",
+            "Web developer · React · Express · MongoDB",
             "C++ · OpenGL · Unity · Game Developer",
             "Low-level systems & graphics enthusiast",
           ].map((item) => (
@@ -71,13 +74,6 @@ export default function Hero() {
             </li>
           ))}
         </ul>
-
-        <div className="mt-9 flex justify-center">
-          <code className="rounded border border-border bg-surface px-4 py-2 font-mono text-xs tracking-widest text-accent">
-            <span className="text-gold">$</span> whoami --engineer
-            <span className="ml-1 inline-block h-3 w-[7px] animate-[blink_1s_step-end_infinite] bg-accent align-middle" />
-          </code>
-        </div>
       </div>
 
       <a
@@ -85,7 +81,13 @@ export default function Hero() {
         className="absolute bottom-9 left-1/2 flex -translate-x-1/2 animate-[pulseSoft_2s_ease-in-out_infinite] flex-col items-center gap-2 font-mono text-[0.58rem] uppercase tracking-[0.3em] text-muted"
       >
         scroll
-        <span className="h-9 w-px bg-gradient-to-b from-muted to-transparent" />
+        <svg
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5 fill-current"
+        >
+          <use href="/svg/svg-sprite.svg#icon-down-arrow" />
+        </svg>
       </a>
     </section>
   );

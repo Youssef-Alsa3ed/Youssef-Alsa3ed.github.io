@@ -1,289 +1,192 @@
 import { useEffect, useRef } from "react";
 
-const CREAM_DARK = "rgba(197,193,168,";
-const CREAM_LIGHT = "rgba(26,25,22,";
-const GOLD = "rgba(179,152,70,";
-
-const LINK_DIST = 110;
+const LINK_DIST = 90;
 const LINK_DIST2 = LINK_DIST * LINK_DIST;
 const CELL = LINK_DIST;
 
+const COLORS = {
+  dark: { dot: "197,193,168", line: "179,152,70", shape: "179,152,70" },
+  light: { dot: "26,25,22", line: "82,66,18", shape: "82,66,18" },
+};
+
+/* ── 3D wireframe shape definitions (unit, scaled at draw time) ── */
+const CUBE_V = [
+  [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+  [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1],
+];
+const CUBE_E = [
+  [0, 1], [1, 2], [2, 3], [3, 0],
+  [4, 5], [5, 6], [6, 7], [7, 4],
+  [0, 4], [1, 5], [2, 6], [3, 7],
+];
+
+const OCTA_V = [
+  [0, 0, -1], [0, 0, 1], [1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0],
+];
+const OCTA_E = [
+  [0, 2], [0, 3], [0, 4], [0, 5],
+  [1, 2], [1, 3], [1, 4], [1, 5],
+  [2, 4], [4, 3], [3, 5], [5, 2],
+];
+
+const PYRAMID_V = [[-1, 0, -1], [1, 0, -1], [1, 0, 1], [-1, 0, 1], [0, 1.4, 0]];
+const PYRAMID_E = [[0, 1], [1, 2], [2, 3], [3, 0], [0, 4], [1, 4], [2, 4], [3, 4]];
+
+const TETRA_V = [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]];
+const TETRA_E = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]];
+
+const HEX_V = [];
+const HEX_E = [];
+for (let i = 0; i < 6; i++) {
+  const a = (i * Math.PI) / 3;
+  HEX_V.push([Math.cos(a), -1, Math.sin(a)]);
+  HEX_V.push([Math.cos(a), 1, Math.sin(a)]);
+}
+for (let i = 0; i < 6; i++) {
+  const b = i * 2;
+  const t = i * 2 + 1;
+  HEX_E.push([b, (b + 2) % 12]);
+  HEX_E.push([t, (t + 2) % 12]);
+  HEX_E.push([b, t]);
+}
+
 export default function BackgroundCanvas({ theme }) {
   const canvasRef = useRef(null);
-  const colorsRef = useRef({
-    cream: theme === "dark" ? CREAM_DARK : CREAM_LIGHT,
-  });
+  const themeRef = useRef(theme);
 
   useEffect(() => {
-    colorsRef.current.cream =
-      theme === "dark" ? CREAM_DARK : CREAM_LIGHT;
+    themeRef.current = theme;
   }, [theme]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    let W, H, particles, shapes, grid;
+    const grid = new Map();
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let W = 0;
+    let H = 0;
+    let particles = [];
+    let shapes = [];
+    let raf = 0;
+    let timer = 0;
 
     function resize() {
-      const docWidth = document.documentElement.scrollWidth;
-      const docHeight = document.documentElement.scrollHeight;
-      W = canvas.width = docWidth;
-      H = canvas.height = docHeight;
-      canvas.style.width = docWidth + "px";
-      canvas.style.height = docHeight + "px";
-    }
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + "px";
+      canvas.style.height = H + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    function initParticles() {
-      const count = Math.min(
-        200,
-        Math.max(80, Math.round(window.innerWidth / 9)),
-      );
+      const count = Math.min(120, Math.max(50, Math.round((W * H) / 22000)));
       particles = Array.from({ length: count }, () => ({
         x: Math.random() * W,
         y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.25,
-        vy: (Math.random() - 0.5) * 0.25,
-        r: Math.random() * 1.2 + 0.3,
-        a: Math.random(),
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        r: Math.random() * 1.1 + 0.5,
       }));
-    }
 
-    function initShapes() {
       shapes = [
-        { type: "hex", x: W * 0.08, y: H * 0.1, size: 30, rot: 0, speed: 0.002 },
-        { type: "tri", x: W * 0.12, y: H * 0.2, size: 38, rot: 1, speed: 0.0018 },
-        {
-          type: "pentprism",
-          x: W * 0.08,
-          y: H * 0.25,
-          size: 25,
-          rot: 0.5,
-          speed: 0.002,
-        },
-        { type: "sq", x: W * 0.95, y: H * 0.28, size: 25, rot: 0.5, speed: 0.002 },
-        {
-          type: "prism",
-          x: W * 0.92,
-          y: H * 0.32,
-          size: 30,
-          rot: 1.5,
-          speed: 0.009,
-        },
-        { type: "tri", x: W * 0.85, y: H * 0.08, size: 28, rot: 0, speed: 0.006 },
-        {
-          type: "hexpyramid",
-          x: W * 0.1,
-          y: H * 0.15,
-          size: 25,
-          rot: 0,
-          speed: 0.005,
-        },
-        {
-          type: "hexpyramid",
-          x: W * 0.9,
-          y: H * 0.15,
-          size: 22,
-          rot: 1,
-          speed: 0.0055,
-        },
-        { type: "prism", x: W * 0.2, y: H * 0.1, size: 20, rot: 0.5, speed: 0.012 },
-        { type: "hex", x: W * 0.15, y: H * 0.35, size: 20, rot: 0, speed: 0.001 },
-        { type: "sq", x: W * 0.2, y: H * 0.4, size: 18, rot: 0.3, speed: 0.0015 },
-        { type: "hex", x: W * 0.8, y: H * 0.35, size: 22, rot: 1, speed: 0.0012 },
-        { type: "sq", x: W * 0.75, y: H * 0.4, size: 16, rot: 0.7, speed: 0.0018 },
-        { type: "tri", x: W * 0.1, y: H * 0.75, size: 20, rot: 0, speed: 0.002 },
-        { type: "hex", x: W * 0.9, y: H * 0.8, size: 18, rot: 0.5, speed: 0.0025 },
-        { type: "cube", x: W * 0.15, y: H * 0.85, size: 18, rot: 0, speed: 0.016 },
-        {
-          type: "hexpyramid",
-          x: W * 0.92,
-          y: H * 0.9,
-          size: 22,
-          rot: 1,
-          speed: 0.011,
-        },
-        {
-          type: "pentprism",
-          x: W * 0.85,
-          y: H * 0.9,
-          size: 25,
-          rot: 0,
-          speed: 0.008,
-        },
-        {
-          type: "hexpyramid",
-          x: W * 0.1,
-          y: H * 0.95,
-          size: 25,
-          rot: 0,
-          speed: 0.005,
-        },
+        { v: TETRA_V, e: TETRA_E, x: W * 0.08, y: H * 0.1, size: 34, rx: 0.4, ry: 0.1, rz: 0.2, sx: 0.011, sy: 0.006, sz: 0.002 },
+        { v: CUBE_V, e: CUBE_E, x: W * 0.2, y: H * 0.85, size: 40, rx: 0.1, ry: 0.7, rz: 0.5, sx: 0.005, sy: 0.009, sz: 0.004 },
+        { v: OCTA_V, e: OCTA_E, x: W * 0.5, y: H * 0.08, size: 26, rx: 1.1, ry: 0.4, rz: 0.8, sx: 0.009, sy: -0.007, sz: 0.005 },
+        { v: HEX_V, e: HEX_E, x: W * 0.47, y: H * 0.88, size: 30, rx: 0.3, ry: 0.2, rz: 1.2, sx: 0.004, sy: 0.011, sz: -0.006 },
+        { v: PYRAMID_V, e: PYRAMID_E, x: W * 0.78, y: H * 0.12, size: 36, rx: 0.6, ry: 1.3, rz: 0.1, sx: 0.008, sy: 0.005, sz: 0.01 },
+        { v: CUBE_V, e: CUBE_E, x: W * 0.7, y: H * 0.62, size: 22, rx: 0.9, ry: 0.5, rz: 0.3, sx: -0.012, sy: 0.008, sz: 0.003 },
+        { v: TETRA_V, e: TETRA_E, x: W * 0.93, y: H * 0.3, size: 28, rx: 0.2, ry: 0.9, rz: 0.6, sx: 0.006, sy: 0.01, sz: -0.007 },
+        { v: OCTA_V, e: OCTA_E, x: W * 0.85, y: H * 0.78, size: 24, rx: 1.3, ry: 0.2, rz: 1.0, sx: 0.01, sy: 0.006, sz: 0.008 },
+        { v: PYRAMID_V, e: PYRAMID_E, x: W * 0.32, y: H * 0.42, size: 18, rx: 0.5, ry: 0.8, rz: 1.1, sx: 0.007, sy: -0.009, sz: 0.005 },
       ];
     }
 
-    function drawHex(cx, cy, s, rot) {
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = rot + (i * Math.PI) / 3;
-        const x = cx + s * Math.cos(a);
-        const y = cy + s * Math.sin(a);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-    }
-
-    function drawTri(cx, cy, s, rot) {
-      ctx.beginPath();
-      for (let i = 0; i < 3; i++) {
-        const a = rot + (i * 2 * Math.PI) / 3 - Math.PI / 2;
-        const x = cx + s * Math.cos(a);
-        const y = cy + s * Math.sin(a);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-    }
-
-    function drawSq(cx, cy, s, rot) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rot);
-      ctx.strokeRect(-s / 2, -s / 2, s, s);
-      ctx.restore();
-    }
-
-    function drawCube(cx, cy, s, rot) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rot);
-      ctx.strokeRect(-s / 2, -s / 2, s, s);
-      ctx.strokeRect(-s / 2 + s * 0.3, -s / 2 - s * 0.3, s, s);
-      ctx.beginPath();
-      ctx.moveTo(-s / 2, -s / 2);
-      ctx.lineTo(-s / 2 + s * 0.3, -s / 2 - s * 0.3);
-      ctx.moveTo(s / 2, -s / 2);
-      ctx.lineTo(s / 2 + s * 0.3, -s / 2 - s * 0.3);
-      ctx.moveTo(s / 2, s / 2);
-      ctx.lineTo(s / 2 + s * 0.3, s / 2 - s * 0.3);
-      ctx.moveTo(-s / 2, s / 2);
-      ctx.lineTo(-s / 2 + s * 0.3, s / 2 - s * 0.3);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawPrism(cx, cy, s, rot) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rot);
-      ctx.beginPath();
-      ctx.moveTo(-s / 2, -s / 2);
-      ctx.lineTo(s / 2, -s / 2);
-      ctx.lineTo(s / 2, s / 2);
-      ctx.lineTo(-s / 2, s / 2);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-s / 2 + s * 0.3, -s / 2 - s * 0.3);
-      ctx.lineTo(s / 2 + s * 0.3, -s / 2 - s * 0.3);
-      ctx.lineTo(s / 2 + s * 0.3, s / 2 - s * 0.3);
-      ctx.lineTo(-s / 2 + s * 0.3, s / 2 - s * 0.3);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-s / 2, -s / 2);
-      ctx.lineTo(-s / 2 + s * 0.3, -s / 2 - s * 0.3);
-      ctx.moveTo(s / 2, -s / 2);
-      ctx.lineTo(s / 2 + s * 0.3, -s / 2 - s * 0.3);
-      ctx.moveTo(s / 2, s / 2);
-      ctx.lineTo(s / 2 + s * 0.3, s / 2 - s * 0.3);
-      ctx.moveTo(-s / 2, s / 2);
-      ctx.lineTo(-s / 2 + s * 0.3, s / 2 - s * 0.3);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawHexagonalPyramid(cx, cy, s, rot) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rot);
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = (i * Math.PI) / 3 - Math.PI / 2;
-        const x = s * Math.cos(a);
-        const y = s * Math.sin(a);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-      ctx.stroke();
-      const apexX = 0;
-      const apexY = -s * 1.2;
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const a = (i * Math.PI) / 3 - Math.PI / 2;
-        const x = s * Math.cos(a);
-        const y = s * Math.sin(a);
-        ctx.moveTo(apexX, apexY);
-        ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawPentagonalPrism(cx, cy, s, rot) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rot);
-      ctx.beginPath();
-      for (let i = 0; i < 5; i++) {
-        const a = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-        const x = s * Math.cos(a);
-        const y = s * Math.sin(a);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-      ctx.stroke();
-      ctx.beginPath();
-      for (let i = 0; i < 5; i++) {
-        const a = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-        const x = s * Math.cos(a) + s * 0.3;
-        const y = s * Math.sin(a) - s * 0.3;
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-      ctx.stroke();
-      ctx.beginPath();
-      for (let i = 0; i < 5; i++) {
-        const a = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-        const x1 = s * Math.cos(a);
-        const y1 = s * Math.sin(a);
-        const x2 = s * Math.cos(a) + s * 0.3;
-        const y2 = s * Math.sin(a) - s * 0.3;
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-      }
-      ctx.stroke();
-      ctx.restore();
-    }
-
     function buildGrid() {
-      grid = new Map();
+      grid.clear();
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        const key =
-          Math.floor(p.x / CELL) * 1000 + Math.floor(p.y / CELL);
+        const key = ((p.x / CELL) | 0) * 10000 + ((p.y / CELL) | 0);
         const cell = grid.get(key);
         if (cell) cell.push(i);
         else grid.set(key, [i]);
       }
     }
 
-    function drawConnections() {
+    function drawShapes(c) {
+      ctx.strokeStyle = "rgba(" + c.shape + ",0.5)";
+      ctx.lineWidth = 1.2;
+      const f = 320;
+      for (const s of shapes) {
+        s.rx += s.sx;
+        s.ry += s.sy;
+        s.rz += s.sz;
+        const cx = Math.cos(s.rx);
+        const sx = Math.sin(s.rx);
+        const cy = Math.cos(s.ry);
+        const sy = Math.sin(s.ry);
+        const cz = Math.cos(s.rz);
+        const sz = Math.sin(s.rz);
+        const pts = new Array(s.v.length);
+        for (let i = 0; i < s.v.length; i++) {
+          const v = s.v[i];
+          let x = v[0] * s.size;
+          let y = v[1] * s.size;
+          let z = v[2] * s.size;
+
+          let t = y * cy - z * sy;
+          z = y * sy + z * cy;
+          y = t;
+
+          t = x * cx - z * sx;
+          z = x * sx + z * cx;
+          x = t;
+
+          t = x * cz - y * sz;
+          y = x * sz + y * cz;
+          x = t;
+
+          const scale = f / (f + z);
+          pts[i] = [s.x + x * scale, s.y + y * scale];
+        }
+        ctx.beginPath();
+        for (const [a, b] of s.e) {
+          ctx.moveTo(pts[a][0], pts[a][1]);
+          ctx.lineTo(pts[b][0], pts[b][1]);
+        }
+        ctx.stroke();
+      }
+    }
+
+    function tick() {
+      const c = COLORS[themeRef.current];
+
+      ctx.clearRect(0, 0, W, H);
+      drawShapes(c);
+
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = W;
+        else if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H;
+        else if (p.y > H) p.y = 0;
+        ctx.fillStyle = "rgba(" + c.dot + ",0.55)";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, 6.2832);
+        ctx.fill();
+      }
+
+      buildGrid();
+
+      ctx.lineWidth = 0.6;
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        const cx = Math.floor(p.x / CELL);
-        const cy = Math.floor(p.y / CELL);
+        const cx = (p.x / CELL) | 0;
+        const cy = (p.y / CELL) | 0;
         for (let gx = cx - 1; gx <= cx + 1; gx++) {
           for (let gy = cy - 1; gy <= cy + 1; gy++) {
-            const cell = grid.get(gx * 1000 + gy);
+            const cell = grid.get(gx * 10000 + gy);
             if (!cell) continue;
             for (const j of cell) {
               if (j <= i) continue;
@@ -293,10 +196,11 @@ export default function BackgroundCanvas({ theme }) {
               const d2 = dx * dx + dy * dy;
               if (d2 < LINK_DIST2) {
                 ctx.strokeStyle =
-                  colorsRef.current.cream +
-                  0.4 * (1 - Math.sqrt(d2) / LINK_DIST) +
+                  "rgba(" +
+                  c.line +
+                  "," +
+                  (0.35 * (1 - Math.sqrt(d2) / LINK_DIST)).toFixed(3) +
                   ")";
-                ctx.lineWidth = 0.4;
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y);
                 ctx.lineTo(q.x, q.y);
@@ -308,122 +212,24 @@ export default function BackgroundCanvas({ theme }) {
       }
     }
 
-    function tick() {
-      ctx.clearRect(0, 0, W, H);
-      const CREAM = colorsRef.current.cream;
-
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = CREAM + "0.35)";
-      for (const s of shapes) {
-        s.rot += s.speed;
-        ctx.beginPath();
-        switch (s.type) {
-          case "hex":
-            drawHex(s.x, s.y, s.size, s.rot);
-            ctx.stroke();
-            break;
-          case "tri":
-            drawTri(s.x, s.y, s.size, s.rot);
-            ctx.stroke();
-            break;
-          case "cube":
-            drawCube(s.x, s.y, s.size, s.rot);
-            break;
-          case "prism":
-            drawPrism(s.x, s.y, s.size, s.rot);
-            break;
-          case "hexpyramid":
-            drawHexagonalPyramid(s.x, s.y, s.size, s.rot);
-            break;
-          case "pentprism":
-            drawPentagonalPrism(s.x, s.y, s.size, s.rot);
-            break;
-          default:
-            drawSq(s.x, s.y, s.size, s.rot);
-            ctx.stroke();
-        }
-      }
-
-      ctx.strokeStyle = GOLD + "0.4)";
-      for (const s of shapes) {
-        ctx.beginPath();
-        switch (s.type) {
-          case "hex":
-            drawHex(s.x, s.y, s.size * 1.6, -s.rot * 0.5);
-            ctx.stroke();
-            break;
-          case "tri":
-            drawTri(s.x, s.y, s.size * 1.5, -s.rot * 0.6);
-            ctx.stroke();
-            break;
-          case "cube":
-            drawCube(s.x, s.y, s.size * 1.6, s.rot);
-            break;
-          case "prism":
-            drawPrism(s.x, s.y, s.size * 1.6, s.rot * 0.5);
-            break;
-          case "pentprism":
-            drawPentagonalPrism(s.x, s.y, s.size * 1.6, s.rot);
-            break;
-          case "hexpyramid":
-            drawHexagonalPyramid(s.x, s.y, s.size * 1.6, -s.rot * 0.5);
-            break;
-          case "sq":
-            drawSq(s.x, s.y, s.size * 1.8, -s.rot * 0.7);
-            ctx.stroke();
-            break;
-        }
-      }
-
-      buildGrid();
-      drawConnections();
-
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = W;
-        if (p.x > W) p.x = 0;
-        if (p.y < 0) p.y = H;
-        if (p.y > H) p.y = 0;
-        ctx.fillStyle = CREAM + p.a * 0.45 + ")";
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      raf = requestAnimationFrame(tick);
+    function loop() {
+      tick();
+      raf = requestAnimationFrame(loop);
     }
 
     resize();
-    initParticles();
-    initShapes();
-    let raf = requestAnimationFrame(tick);
+    if (reduced) tick();
+    else loop();
 
-    let lastWidth = window.innerWidth;
-    let lastHeight = window.innerHeight;
-    let resizeTimer;
-
-    function onResize() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        const heightChange = Math.abs(h - lastHeight) / lastHeight;
-        if (Math.abs(w - lastWidth) > 2 || heightChange > 0.15) {
-          lastWidth = w;
-          lastHeight = h;
-          resize();
-          initParticles();
-          initShapes();
-        }
-      }, 150);
-    }
-
+    const onResize = () => {
+      clearTimeout(timer);
+      timer = setTimeout(resize, 150);
+    };
     window.addEventListener("resize", onResize);
 
     return () => {
       cancelAnimationFrame(raf);
-      clearTimeout(resizeTimer);
+      clearTimeout(timer);
       window.removeEventListener("resize", onResize);
     };
   }, []);
@@ -431,7 +237,7 @@ export default function BackgroundCanvas({ theme }) {
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none absolute left-0 top-0 z-0"
+      className="pointer-events-none fixed inset-0 z-0"
     />
   );
 }

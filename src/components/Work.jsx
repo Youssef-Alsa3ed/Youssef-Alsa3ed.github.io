@@ -4,23 +4,19 @@ import projects from "../data/projects";
 
 export default function Work() {
   return (
-    <section id="work" className="relative mx-auto w-full max-w-5xl border-t border-border px-5 py-24 sm:px-8">
-      <SectionHeader label="03 // log" index="/03" title="Projects" />
+    <>
+      <section
+        id="work"
+        className="relative z-10 mx-auto w-full max-w-[900px] border-t border-border px-8 pt-24"
+      >
+        <SectionHeader label="03 // log" index="/03" title="Projects" />
+      </section>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project, i) => (
-          <Reveal key={project.id} delay={i * 90}>
-            <article className="group flex flex-col overflow-hidden rounded-md border border-border transition-all duration-300 hover:-translate-y-1 hover:border-gold/40 hover:shadow-[0_16px_48px_rgba(179,152,70,0.14)]">
-              <div className="flex items-center gap-1.5 border-b border-border bg-card px-3 py-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]/70" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]/70" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]/70" />
-                <span className="ml-3 truncate font-mono text-[0.55rem] uppercase tracking-[0.2em] text-muted">
-                  {String(i + 1).padStart(2, "0")} · {project.title}
-                </span>
-              </div>
-
-              <div className="relative aspect-video overflow-hidden bg-darker md:aspect-[4/3]">
+      <section className="relative z-10 mx-auto w-full max-w-[900px] px-8 pb-24">
+        <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5">
+          {projects.map((project, i) => {
+            const inner = (
+              <>
                 {project.type === "video" ? (
                   <video
                     autoPlay
@@ -28,7 +24,7 @@ export default function Work() {
                     muted
                     playsInline
                     preload="metadata"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                   >
                     <source src={project.media} type="video/mp4" />
                     Your browser does not support the video tag.
@@ -39,31 +35,56 @@ export default function Work() {
                     alt={project.title}
                     loading="lazy"
                     decoding="async"
-                    className="h-full w-full object-cover opacity-90 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
+                    style={
+                      project.id === "supertracer"
+                        ? { objectPosition: "center 78%" }
+                        : undefined
+                    }
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                   />
                 )}
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-darker/80 via-transparent to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-90"
-                />
-              </div>
 
-              <div className="flex flex-1 flex-col justify-end gap-2 p-5">
-                <p className="font-sans text-sm leading-snug text-muted">
-                  {project.description}
-                </p>
-              </div>
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
 
-              <div className="flex items-center justify-between border-t border-border bg-card px-4 py-2.5 font-mono text-[0.55rem] uppercase tracking-[0.2em]">
-                <span className="text-muted">{project.tag}</span>
-                <span className="flex items-center gap-1 text-gold transition-transform duration-300 group-hover:translate-x-1">
-                  $ ./run ↗
-                </span>
-              </div>
-            </article>
-          </Reveal>
-        ))}
-      </div>
-    </section>
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black/50">
+                  <h3 className="max-h-0 overflow-hidden px-3 pt-0 text-lg font-semibold text-white opacity-0 transition-all duration-300 group-hover:max-h-10 group-hover:pt-2 group-hover:opacity-100">
+                    {project.title}
+                  </h3>
+                  <p className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm leading-snug text-white/90">
+                    <span>{project.description}</span>
+                    <svg
+                      viewBox="0 0 16 16"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 shrink-0 fill-current text-gold/80 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100"
+                    >
+                      <use href="/svg/svg-sprite.svg#icon-arrow-up-right" />
+                    </svg>
+                  </p>
+                </div>
+              </>
+            );
+
+            return (
+              <Reveal key={project.id} delay={(i % 2) * 80}>
+                {project.link ? (
+                  <a
+                    href={project.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group relative flex min-h-[240px] items-center justify-center overflow-hidden rounded border border-border bg-black/20 transition-all duration-300 hover:border-gold/40 hover:shadow-[0_0_24px_rgba(179,152,70,0.15)]"
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <div className="group relative flex min-h-[240px] items-center justify-center overflow-hidden rounded border border-border bg-black/20">
+                    {inner}
+                  </div>
+                )}
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+    </>
   );
 }

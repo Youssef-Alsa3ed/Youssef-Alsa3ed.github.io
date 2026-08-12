@@ -56,7 +56,7 @@ export default function Nav({ theme, onToggle }) {
     >
       <div
         aria-hidden="true"
-        className="absolute bottom-0 left-0 h-px bg-gold transition-[width] duration-150 ease-linear"
+        className="absolute bottom-0 left-0 h-[3px] bg-[linear-gradient(90deg,transparent_0%,rgba(179,152,70,0.35)_8%,#b39846_45%,#d4b55a_78%,rgba(255,255,255,0.9)_100%)] shadow-[0_0_12px_rgba(179,152,70,0.6)] transition-[width] duration-150 ease-linear"
         ref={progressRef}
       />
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3 sm:px-6">
@@ -93,9 +93,25 @@ export default function Nav({ theme, onToggle }) {
             aria-label="Toggle theme"
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
             onClick={onToggle}
-            className="flex h-9 w-9 items-center justify-center rounded border border-border font-mono text-base text-text transition-all duration-300 hover:border-gold hover:bg-gold/10"
+            className="flex h-9 w-9 items-center justify-center rounded border border-border text-text transition-all duration-300 hover:border-gold hover:bg-gold/10"
           >
-            {isDark ? "☀" : "◐"}
+            {isDark ? (
+              <svg
+                viewBox="0 0 16 16"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-[18px] w-[18px] fill-current"
+              >
+                <use href="/svg/svg-sprite.svg#icon-sun" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 48 48"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-[18px] w-[18px] fill-current"
+              >
+                <use href="/svg/svg-sprite.svg#icon-moon" />
+              </svg>
+            )}
           </button>
 
           <button

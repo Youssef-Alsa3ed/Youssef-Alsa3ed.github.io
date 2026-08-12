@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { ReactLenis } from "lenis/react";
 import Nav from "./components/Nav";
+import OpeningOverlay from "./components/OpeningOverlay";
 import BackgroundCanvas from "./components/BackgroundCanvas";
-import CursorGlow from "./components/CursorGlow";
 import Hero from "./components/Hero";
 import Skills from "./components/Skills";
 import Work from "./components/Work";
@@ -17,6 +17,11 @@ export default function App() {
   const [theme, setTheme] = useState(
     () => localStorage.getItem("theme") || "dark"
   );
+
+  useEffect(() => {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -42,18 +47,8 @@ export default function App() {
         reduceMotion: prefersReducedMotion,
       }}
     >
+      <OpeningOverlay />
       <Nav theme={theme} onToggle={toggleTheme} />
-
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-x-0 z-0 h-px bg-[linear-gradient(to_right,transparent,rgba(179,152,70,0.14),transparent)]"
-        style={{ top: 48 }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-x-0 z-0 h-px bg-[linear-gradient(to_right,transparent,rgba(179,152,70,0.14),transparent)]"
-        style={{ bottom: 40 }}
-      />
 
       <BackgroundCanvas theme={theme} />
 
@@ -61,8 +56,6 @@ export default function App() {
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0 bg-[repeating-linear-gradient(0deg,transparent_0_2px,rgba(0,0,0,0.05)_2px_4px)]"
       />
-
-      <CursorGlow />
 
       <main className="relative z-10">
         <Hero />

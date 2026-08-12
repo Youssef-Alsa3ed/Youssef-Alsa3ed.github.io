@@ -28,7 +28,7 @@ export default function Skills() {
               >
                 <use href={`/svg/svg-sprite.svg#${skill.icon}`} />
               </svg>
-              <span className="font-mono text-[0.62rem] uppercase tracking-[0.15em] text-muted transition-colors duration-300 group-hover:text-text">
+              <span className="font-mono text-[0.62rem] uppercase tracking-[0.15em] text-muted transition-colors duration-300 group-hover:text-gold">
                 {skill.name}
               </span>
             </div>

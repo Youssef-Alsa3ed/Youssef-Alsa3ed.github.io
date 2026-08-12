@@ -7,14 +7,17 @@ const projects = [
       "A CPU Monte Carlo path tracer with BVH acceleration, multithreaded rendering, and OIDN denoising. Render of the Sponza atrium.",
     media: "/media/sponza.avif",
     type: "image",
+    link: "https://github.com/Youssef-Alsa3ed/SuperTracer",
   },
   {
     id: "engine",
-    title: "Untitled Engine",
+    title: "Trilizer",
     tag: "C++ · OpenGL",
-    description: "A custom game engine built from scratch using C++ and OpenGL.",
+    description:
+      "A custom game engine built from scratch using C++ and OpenGL.",
     media: "/media/project1.mp4",
     type: "video",
+    link: "https://github.com/Youssef-Alsa3ed/trilizer",
   },
   {
     id: "yage",
@@ -23,6 +26,7 @@ const projects = [
     description: "An old experimental game engine made with OpenGL.",
     media: "/media/project4.webp",
     type: "image",
+    link: "https://github.com/Youssef-Alsa3ed/Renderer",
   },
   {
     id: "chess",
