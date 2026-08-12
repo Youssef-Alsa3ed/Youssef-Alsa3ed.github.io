@@ -50,6 +50,16 @@ for (let i = 0; i < 6; i++) {
   HEX_E.push([b, t]);
 }
 
+const TETRA_K = { v: TETRA_V, e: TETRA_E };
+const CUBE_K = { v: CUBE_V, e: CUBE_E };
+const OCTA_K = { v: OCTA_V, e: OCTA_E };
+const HEX_K = { v: HEX_V, e: HEX_E };
+const PYRAMID_K = { v: PYRAMID_V, e: PYRAMID_E };
+const SHAPE_POOL = [
+  CUBE_K, CUBE_K, CUBE_K,
+  TETRA_K, OCTA_K, HEX_K, PYRAMID_K,
+];
+
 export default function BackgroundCanvas({ theme }) {
   const canvasRef = useRef(null);
   const themeRef = useRef(theme);
@@ -67,47 +77,103 @@ export default function BackgroundCanvas({ theme }) {
     let W = 0;
     let H = 0;
     let lastW = 0;
+    let lastH = 0;
     let particles = [];
     let shapes = [];
     let raf = 0;
     let timer = 0;
 
+    function layoutShapes() {
+      shapes = SHAPE_SPECS.map((s) => ({
+        v: s.v,
+        e: s.e,
+        x: s.x * W,
+        y: s.y * H,
+        size: s.size,
+        rx: s.rx,
+        ry: s.ry,
+        rz: s.rz,
+        sx: s.sx,
+        sy: s.sy,
+        sz: s.sz,
+      }));
+    }
+
+    function scatterShapes() {
+      const vh = window.innerHeight || H;
+      const count = Math.max(14, Math.round(H / Math.max(vh * 0.3, 180)));
+      const span = H / count;
+      shapes = new Array(count);
+      for (let i = 0; i < count; i++) {
+        const kind = SHAPE_POOL[(Math.random() * SHAPE_POOL.length) | 0];
+        const y = ((i + 0.5 + (Math.random() - 0.5) * 0.7) * span);
+        const edgeR = Math.random();
+        let x;
+        if (kind === HEX_K) {
+          x = y < H * 0.4 ? Math.random() * W * 0.55 : Math.random() * W;
+        } else if (edgeR < 0.35) {
+          x = Math.random() < 0.5
+            ? Math.random() * W * 0.16
+            : W - Math.random() * W * 0.16;
+        } else {
+          x = Math.random() * W;
+        }
+        const big = Math.random() < 0.18;
+        shapes[i] = {
+          v: kind.v,
+          e: kind.e,
+          x,
+          y,
+          size: big ? 42 + Math.random() * 22 : 13 + Math.random() * 30,
+          alpha: (big ? 0.5 : 0.28) + Math.random() * 0.25,
+          lw: 0.9 + Math.random() * 0.7,
+          rx: Math.random() * Math.PI,
+          ry: Math.random() * Math.PI,
+          rz: Math.random() * Math.PI,
+          sx: (Math.random() - 0.5) * 0.03,
+          sy: (Math.random() - 0.5) * 0.03,
+          sz: (Math.random() - 0.5) * 0.03,
+        };
+      }
+    }
+
     function resize() {
       const newW = window.innerWidth;
-      const newH = window.innerHeight;
+      const newH = Math.max(
+        document.documentElement.scrollHeight,
+        window.innerHeight
+      );
       const widthChanged = newW !== lastW;
+      const heightChanged = Math.abs(newH - lastH) > 4;
+      const prevH = lastH;
 
       W = newW;
       H = newH;
+      lastW = newW;
+      lastH = newH;
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
       canvas.style.width = W + "px";
       canvas.style.height = H + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      lastW = newW;
-      if (!widthChanged) return; // URL-bar height jitter on mobile: keep scene, only resize backing store
+      if (widthChanged) {
+        const count = Math.min(320, Math.max(50, Math.round((W * H) / 22000)));
+        particles = Array.from({ length: count }, () => ({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          r: Math.random() * 1.1 + 0.5,
+        }));
+        scatterShapes();
+      } else if (heightChanged) {
+        // content height shifted (media/fonts settle): stretch shapes, keep randomness
+        const ratio = prevH > 0 ? H / prevH : 1;
+        for (const s of shapes) s.y *= ratio;
+      }
 
-      const count = Math.min(120, Math.max(50, Math.round((W * H) / 22000)));
-      particles = Array.from({ length: count }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        r: Math.random() * 1.1 + 0.5,
-      }));
-
-      shapes = [
-        { v: TETRA_V, e: TETRA_E, x: W * 0.08, y: H * 0.1, size: 34, rx: 0.4, ry: 0.1, rz: 0.2, sx: 0.011, sy: 0.006, sz: 0.002 },
-        { v: CUBE_V, e: CUBE_E, x: W * 0.2, y: H * 0.85, size: 40, rx: 0.1, ry: 0.7, rz: 0.5, sx: 0.005, sy: 0.009, sz: 0.004 },
-        { v: OCTA_V, e: OCTA_E, x: W * 0.5, y: H * 0.08, size: 26, rx: 1.1, ry: 0.4, rz: 0.8, sx: 0.009, sy: -0.007, sz: 0.005 },
-        { v: HEX_V, e: HEX_E, x: W * 0.47, y: H * 0.88, size: 30, rx: 0.3, ry: 0.2, rz: 1.2, sx: 0.004, sy: 0.011, sz: -0.006 },
-        { v: PYRAMID_V, e: PYRAMID_E, x: W * 0.78, y: H * 0.12, size: 36, rx: 0.6, ry: 1.3, rz: 0.1, sx: 0.008, sy: 0.005, sz: 0.01 },
-        { v: CUBE_V, e: CUBE_E, x: W * 0.7, y: H * 0.62, size: 22, rx: 0.9, ry: 0.5, rz: 0.3, sx: -0.012, sy: 0.008, sz: 0.003 },
-        { v: TETRA_V, e: TETRA_E, x: W * 0.93, y: H * 0.3, size: 28, rx: 0.2, ry: 0.9, rz: 0.6, sx: 0.006, sy: 0.01, sz: -0.007 },
-        { v: OCTA_V, e: OCTA_E, x: W * 0.85, y: H * 0.78, size: 24, rx: 1.3, ry: 0.2, rz: 1.0, sx: 0.01, sy: 0.006, sz: 0.008 },
-        { v: PYRAMID_V, e: PYRAMID_E, x: W * 0.32, y: H * 0.42, size: 18, rx: 0.5, ry: 0.8, rz: 1.1, sx: 0.007, sy: -0.009, sz: 0.005 },
-      ];
+      if (reduced) tick();
     }
 
     function buildGrid() {
@@ -122,13 +188,13 @@ export default function BackgroundCanvas({ theme }) {
     }
 
     function drawShapes(c) {
-      ctx.strokeStyle = "rgba(" + c.shape + ",0.5)";
-      ctx.lineWidth = 1.2;
       const f = 320;
       for (const s of shapes) {
         s.rx += s.sx;
         s.ry += s.sy;
         s.rz += s.sz;
+        ctx.strokeStyle = "rgba(" + c.shape + "," + s.alpha.toFixed(3) + ")";
+        ctx.lineWidth = s.lw;
         const cx = Math.cos(s.rx);
         const sx = Math.sin(s.rx);
         const cy = Math.cos(s.ry);
@@ -234,18 +300,21 @@ export default function BackgroundCanvas({ theme }) {
       timer = setTimeout(resize, 150);
     };
     window.addEventListener("resize", onResize);
+    const ro = new ResizeObserver(onResize);
+    ro.observe(document.body);
 
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(timer);
       window.removeEventListener("resize", onResize);
+      ro.disconnect();
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none fixed inset-0 z-0"
+      className="pointer-events-none absolute left-0 top-0 z-0 block"
     />
   );
 }
